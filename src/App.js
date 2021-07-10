@@ -2,9 +2,14 @@ import './App.css';
 import Pagination from './components/pagination';
 import React,{useEffect,useState} from 'react';
 import axios from  'axios';
+import _ from 'lodash';
+import { paginate } from './utils/paginate';
+import MerchantList from './components/merchantlist'; 
 function App() {
+  const pageSize=5;
   const [merchantArray,setMerchantArray]=useState([]);
   const [currentPage,setCurrentPage]=useState(1);
+  const [sortColumn,setSortColumn]=useState({path:'firstname',order:'asc'})
   useEffect(() => {     
 var config = {
   method: 'get',
@@ -15,7 +20,7 @@ axios(config)
 .then(function  (response) {
   var merchantArr=[]
   response.data.map(x=>{
-    merchantArr=[...merchantArr,{...x,checked:false,bidMax:x.bids.reduce((accObj, currentObj)=> accObj.amount > currentObj.amount ? accObj : currentObj, 1).amount}]
+    merchantArr=[...merchantArr,{...x,bidMinTog:false,bidMin:x.bids.reduce((accObj, currentObj)=> accObj.amount < currentObj.amount ? accObj : currentObj, 1).amount,bidMax:x.bids.reduce((accObj, currentObj)=> accObj.amount > currentObj.amount ? accObj : currentObj, 1).amount}]
   })
  setMerchantArray(merchantArr);
 })
@@ -28,15 +33,23 @@ const handlePageChange = (page) => {
 };
 if (merchantArray.length===0) return null
 console.log(merchantArray)
-//  console.log(merchantArray[0].bids.reduce((accObj, currentObj) =>
-//  accObj.x > currentObj.x ? accObj : currentObj, 1
-// ).x)
-  return (
-    
+const handleSort = (sortColumn) => {
+  setSortColumn(sortColumn)
+};
+const sorted = _.orderBy(merchantArray, [sortColumn.path], [sortColumn.order]);
+
+const merchants = paginate(sorted, currentPage, pageSize);
+
+  return (    
     <>
+      <MerchantList
+             merchants={merchants}
+            sortColumn={sortColumn}
+            onSort={handleSort}
+          />
          <Pagination
             itemsCount={merchantArray.length}
-            pageSize={4}
+            pageSize={pageSize}
             onPageChange={handlePageChange}
             currentPage={currentPage}
           />
