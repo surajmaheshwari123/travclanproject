@@ -14,7 +14,7 @@ const TableBody=(props)=>{
     return (
       <tbody>
         {data.map((d) => (
-          <tr key={d._id}>
+          <tr key={d.id}>
             {columns.map((column) => (
               <td key={ createKey(d, column)}>
                 { rendercell(d, column)}
